@@ -1,5 +1,5 @@
 module typescript-golang
 
-go 1.21
+go 1.18
 
 require ()

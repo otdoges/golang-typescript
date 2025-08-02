@@ -2,9 +2,6 @@
  * Code generation utilities for TypeScript to Go conversion
  */
 
-import fs from 'fs-extra';
-import path from 'path';
-
 export interface ConversionOptions {
   preserveComments?: boolean;
   generateTests?: boolean;
@@ -100,7 +97,7 @@ export class TypeScriptToGoGenerator {
   private convertInterfaces(code: string): string {
     const interfaceRegex = /interface\s+(\w+)\s*\{([^}]*)\}/g;
     
-    return code.replace(interfaceRegex, (match, name, body) => {
+    return code.replace(interfaceRegex, (_match: string, name: string, body: string) => {
       const fields = this.parseInterfaceFields(body);
       let structFields = '';
       
@@ -117,7 +114,7 @@ export class TypeScriptToGoGenerator {
   private convertClasses(code: string): string {
     const classRegex = /class\s+(\w+)(?:\s+extends\s+(\w+))?\s*\{([^}]*)\}/g;
     
-    return code.replace(classRegex, (match, className, baseClass, body) => {
+    return code.replace(classRegex, (_match: string, className: string, baseClass: string, body: string) => {
       const members = this.parseClassMembers(body);
       let result = '';
 
@@ -181,7 +178,7 @@ export class TypeScriptToGoGenerator {
   private convertEnums(code: string): string {
     const enumRegex = /enum\s+(\w+)\s*\{([^}]*)\}/g;
     
-    return code.replace(enumRegex, (match, name, body) => {
+    return code.replace(enumRegex, (_match: string, name: string, body: string) => {
       const values = this.parseEnumValues(body);
       let result = '';
 
@@ -222,7 +219,7 @@ export class TypeScriptToGoGenerator {
   private convertFunctions(code: string): string {
     const functionRegex = /function\s+(\w+)\s*\(([^)]*)\)\s*:\s*([^{]+)\s*\{([^}]*)\}/g;
     
-    return code.replace(functionRegex, (match, name, params, returnType, body) => {
+    return code.replace(functionRegex, (_match: string, name: string, params: string, returnType: string, body: string) => {
       const goParams = this.convertParameters(params);
       const goReturnType = returnType.trim() !== 'void' ? this.convertType(returnType.trim()) : '';
       const goBody = this.convertFunctionBody(body);
@@ -240,7 +237,7 @@ export class TypeScriptToGoGenerator {
   private convertTypeDefinitions(code: string): string {
     const typeRegex = /type\s+(\w+)\s*=\s*([^;]+);?/g;
     
-    return code.replace(typeRegex, (match, name, definition) => {
+    return code.replace(typeRegex, (_match: string, name: string, definition: string) => {
       // Handle union types
       if (definition.includes('|')) {
         this.warnings.push(`Union type ${name} converted to interface{} - manual review needed`);
@@ -256,7 +253,7 @@ export class TypeScriptToGoGenerator {
     // Convert const/let/var declarations
     const varRegex = /(const|let|var)\s+(\w+)(?:\s*:\s*([^=]+))?\s*=\s*([^;]+);?/g;
     
-    return code.replace(varRegex, (match, keyword, name, type, value) => {
+    return code.replace(varRegex, (_match: string, _keyword: string, name: string, type: string, value: string) => {
       const goValue = this.convertValue(value.trim());
       
       if (type) {
@@ -270,22 +267,22 @@ export class TypeScriptToGoGenerator {
 
   private convertLiterals(code: string): string {
     // Convert object literals
-    code = code.replace(/\{([^}]*)\}/g, (match, content) => {
+    code = code.replace(/\{([^}]*)\}/g, (_match: string, content: string) => {
       if (content.includes(':')) {
         // Looks like an object literal
-        const pairs = content.split(',').map(pair => {
-          const [key, value] = pair.split(':').map(s => s.trim());
+        const pairs = content.split(',').map((pair: string) => {
+          const [key, value] = pair.split(':').map((s: string) => s.trim());
           return `${key}: ${this.convertValue(value)}`;
         });
         return `{${pairs.join(', ')}}`;
       }
-      return match;
+      return _match;
     });
 
     // Convert array literals
-    code = code.replace(/\[([^\]]*)\]/g, (match, content) => {
+    code = code.replace(/\[([^\]]*)\]/g, (_match: string, content: string) => {
       if (content.trim()) {
-        const items = content.split(',').map(item => this.convertValue(item.trim()));
+        const items = content.split(',').map((item: string) => this.convertValue(item.trim()));
         return `[]interface{}{${items.join(', ')}}`;
       }
       return '[]interface{}{}';
@@ -296,22 +293,22 @@ export class TypeScriptToGoGenerator {
 
   private convertMethodCalls(code: string): string {
     // Convert .map() calls
-    code = code.replace(/(\w+)\.map\(([^)]+)\)/g, (match, array, fn) => {
+    code = code.replace(/(\w+)\.map\(([^)]+)\)/g, (_match: string, array: string, fn: string) => {
       return `utils.Map(${array}, ${fn})`;
     });
 
     // Convert .filter() calls
-    code = code.replace(/(\w+)\.filter\(([^)]+)\)/g, (match, array, fn) => {
+    code = code.replace(/(\w+)\.filter\(([^)]+)\)/g, (_match: string, array: string, fn: string) => {
       return `utils.Filter(${array}, ${fn})`;
     });
 
     // Convert .reduce() calls
-    code = code.replace(/(\w+)\.reduce\(([^)]+)\)/g, (match, array, args) => {
+    code = code.replace(/(\w+)\.reduce\(([^)]+)\)/g, (_match: string, array: string, args: string) => {
       return `utils.Reduce(${array}, ${args})`;
     });
 
     // Convert Promise constructors
-    code = code.replace(/new Promise<([^>]+)>\(([^)]+)\)/g, (match, type, executor) => {
+    code = code.replace(/new Promise<([^>]+)>\(([^)]+)\)/g, (_match: string, type: string, executor: string) => {
       const goType = this.convertType(type);
       return `async.NewPromise[${goType}](${executor})`;
     });

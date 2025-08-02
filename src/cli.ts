@@ -21,6 +21,38 @@ function getLibrarySourceDir(): string {
   return path.join(__dirname, '../');
 }
 
+/**
+ * Copy template files with variable substitution
+ */
+async function copyTemplateWithSubstitution(
+  templatePath: string,
+  targetPath: string,
+  variables: Record<string, string>
+): Promise<void> {
+  const stat = await fs.stat(templatePath);
+  
+  if (stat.isDirectory()) {
+    await fs.ensureDir(targetPath);
+    const entries = await fs.readdir(templatePath);
+    
+    for (const entry of entries) {
+      const srcPath = path.join(templatePath, entry);
+      const destPath = path.join(targetPath, entry);
+      await copyTemplateWithSubstitution(srcPath, destPath, variables);
+    }
+  } else {
+    let content = await fs.readFile(templatePath, 'utf8');
+    
+    // Replace variables
+    for (const [key, value] of Object.entries(variables)) {
+      const regex = new RegExp(key, 'g');
+      content = content.replace(regex, value);
+    }
+    
+    await fs.writeFile(targetPath, content);
+  }
+}
+
 // Commands
 
 /**
@@ -31,6 +63,7 @@ export async function initProject(projectName: string, options: any = {}) {
   
   try {
     const projectPath = path.resolve(projectName);
+    const template = options.template || 'basic-project';
     
     // Check if directory exists
     if (fs.existsSync(projectPath)) {
@@ -41,7 +74,7 @@ export async function initProject(projectName: string, options: any = {}) {
     // Create project directory
     await fs.ensureDir(projectPath);
     
-    // Copy Go library files
+    // Copy Go library files with module name substitution
     const sourceDir = getLibrarySourceDir();
     const filesToCopy = [
       'types',
@@ -58,14 +91,18 @@ export async function initProject(projectName: string, options: any = {}) {
       const destPath = path.join(projectPath, file);
       
       if (await fs.pathExists(srcPath)) {
-        await fs.copy(srcPath, destPath);
+        await copyTemplateWithSubstitution(srcPath, destPath, {
+          'typescript-golang': projectName
+        });
       }
     }
 
-    // Copy project template
-    const templatePath = path.join(getTemplatesDir(), 'basic-project');
+    // Copy project template with variable substitution
+    const templatePath = path.join(getTemplatesDir(), template);
     if (await fs.pathExists(templatePath)) {
-      await fs.copy(templatePath, projectPath, { overwrite: false });
+      await copyTemplateWithSubstitution(templatePath, projectPath, {
+        'PROJECT_NAME': projectName
+      });
     }
 
     // Update go.mod with project name
@@ -212,8 +249,8 @@ export async function generateGoCode(inputFile: string, options: any = {}) {
     // Basic TypeScript to Go conversion patterns
     let goContent = tsContent
       // Convert interface to Go struct
-      .replace(/interface\s+(\w+)\s*{([^}]*)}/g, (match, name, body) => {
-        const fields = body.trim().split('\n').map(line => {
+      .replace(/interface\s+(\w+)\s*{([^}]*)}/g, (_match: string, name: string, body: string) => {
+        const fields = body.trim().split('\n').map((line: string) => {
           const trimmed = line.trim();
           if (trimmed.endsWith(';')) {
             const parts = trimmed.slice(0, -1).split(':');
@@ -230,10 +267,10 @@ export async function generateGoCode(inputFile: string, options: any = {}) {
         return `type ${name} struct {\n${fields}\n}`;
       })
       // Convert enum to Go constants
-      .replace(/enum\s+(\w+)\s*{([^}]*)}/g, (match, name, body) => {
-        const values = body.trim().split(',').map(v => v.trim()).filter(Boolean);
+      .replace(/enum\s+(\w+)\s*{([^}]*)}/g, (_match: string, name: string, body: string) => {
+        const values = body.trim().split(',').map((v: string) => v.trim()).filter(Boolean);
         let result = `type ${name} int\n\nconst (\n`;
-        values.forEach((value, index) => {
+        values.forEach((value: string, index: number) => {
           const parts = value.split('=');
           const enumName = parts[0].trim();
           if (index === 0) {
@@ -246,13 +283,13 @@ export async function generateGoCode(inputFile: string, options: any = {}) {
         return result;
       })
       // Convert function declarations
-      .replace(/function\s+(\w+)\s*\(([^)]*)\)\s*:\s*(\w+)/g, (match, name, params, returnType) => {
+      .replace(/function\s+(\w+)\s*\(([^)]*)\)\s*:\s*(\w+)/g, (_match: string, name: string, params: string, returnType: string) => {
         const goParams = convertParameters(params);
         const goReturnType = convertTypeScriptTypeToGo(returnType);
         return `func ${name}(${goParams}) ${goReturnType}`;
       })
       // Convert class to struct with methods
-      .replace(/class\s+(\w+)\s*{([^}]*)}/g, (match, name, body) => {
+      .replace(/class\s+(\w+)\s*{([^}]*)}/g, (_match: string, name: string, _body: string) => {
         // This is a simplified conversion - real implementation would be more complex
         return `type ${name} struct {\n\t// TODO: Convert class properties\n}\n\n// TODO: Convert class methods`;
       });

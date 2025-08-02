@@ -542,7 +542,7 @@ export class ValidationUtils {
           warnings.push(`Directory ${directory} is not empty`);
           
           const importantFiles = ['go.mod', 'package.json', 'main.go'];
-          const hasImportantFiles = files.some(file => importantFiles.includes(file));
+          const hasImportantFiles = files.some((file: string) => importantFiles.includes(file));
           
           if (hasImportantFiles) {
             errors.push(`Directory ${directory} contains important files that might be overwritten`);
