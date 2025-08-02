@@ -1,0 +1,17 @@
+{
+  "name": "web-api",
+  "description": "Web API server with TypeScript-like Go patterns",
+  "author": "TypeScript-Golang",
+  "version": "1.0.0",
+  "features": [
+    "HTTP server with middleware",
+    "TypeScript-like error handling",
+    "Promise-based async operations",
+    "JSON utilities",
+    "Event-driven architecture",
+    "Testing framework for APIs"
+  ],
+  "dependencies": [
+    "github.com/gorilla/mux"
+  ]
+}

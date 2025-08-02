@@ -1,0 +1,88 @@
+{
+  "name": "typescript-golang",
+  "version": "1.0.0",
+  "description": "A comprehensive Go implementation that provides TypeScript-like language features and patterns, making it easier for TypeScript developers to work with Go",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "bin": {
+    "ts-go": "./bin/ts-go.js",
+    "typescript-golang": "./bin/ts-go.js"
+  },
+  "scripts": {
+    "build": "tsc && chmod +x bin/ts-go.js",
+    "prepublishOnly": "npm run build",
+    "test": "jest",
+    "dev": "tsc --watch",
+    "demo": "go run .",
+    "clean": "rm -rf lib bin/*.js",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "keywords": [
+    "typescript",
+    "golang",
+    "go",
+    "generics",
+    "async",
+    "promises",
+    "collections",
+    "utilities",
+    "migration",
+    "developer-tools",
+    "code-generation",
+    "transpiler"
+  ],
+  "author": "TypeScript-Golang Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/typescript-golang/typescript-golang.git"
+  },
+  "bugs": {
+    "url": "https://github.com/typescript-golang/typescript-golang/issues"
+  },
+  "homepage": "https://github.com/typescript-golang/typescript-golang#readme",
+  "files": [
+    "lib",
+    "bin",
+    "templates",
+    "go.mod",
+    "go.sum",
+    "types",
+    "utils",
+    "async",
+    "classes",
+    "enums",
+    "testing",
+    "README.md",
+    "COMPARISON.md"
+  ],
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.8",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.0.0",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.0.0",
+    "fs-extra": "^11.0.0",
+    "inquirer": "^9.2.0",
+    "ora": "^7.0.0"
+  },
+  "preferGlobal": true,
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "basic-project",
+  "description": "Basic TypeScript-like Go project with examples",
+  "author": "TypeScript-Golang",
+  "version": "1.0.0",
+  "features": [
+    "Optional types",
+    "Array utilities", 
+    "Async/Promise patterns",
+    "Classes and inheritance",
+    "Collections (Map/Set)",
+    "Event system",
+    "Error handling",
+    "Testing framework"
+  ]
+}
