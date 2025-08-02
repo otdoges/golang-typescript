@@ -26,7 +26,7 @@ function getLibrarySourceDir(): string {
 /**
  * Initialize a new TypeScript-Go project
  */
-async function initProject(projectName: string, options: any) {
+export async function initProject(projectName: string, options: any = {}) {
   const spinner = ora('Creating new TypeScript-Go project...').start();
   
   try {
@@ -197,7 +197,7 @@ ${chalk.blue('Available commands:')}
 /**
  * Generate Go code from TypeScript
  */
-async function generateGoCode(inputFile: string, options: any) {
+export async function generateGoCode(inputFile: string, options: any = {}) {
   const spinner = ora('Generating Go code from TypeScript...').start();
   
   try {
